@@ -1,4 +1,4 @@
-### URL ###
+## URL ##
 
 url = http://13.125.243.134:5000/
 
@@ -6,7 +6,7 @@ $ set FLASK_APP = filename
 
 $ flask run --host=0.0.0.0
 
-### Nohup ###
+## Nohup ##
 
 nohup usage:
 
@@ -16,14 +16,14 @@ $ nohup python -u app.py &
 
 & = background exec
 
-### Virtuel Env ###
+## Virtuel Env ##
 
 Python Virenv : 
 
 $ source activate pytorch_latest_p37
 
 
-## git operations ##
+#### git operations ####
 
 git init
 
@@ -42,5 +42,5 @@ connect : git remote add origin
 connec to new url : git remote set-url origin (new url)
 
 
-#### static js file problem ####
+## static js file problem -solved##
 see https://stackoverflow.com/questions/41250560/flask-where-to-put-static-javascript-files-in-templates
