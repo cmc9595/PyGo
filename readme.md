@@ -15,3 +15,17 @@ $ nohup python -u app.py &
 
 Python Virenv : 
 $ source activate pytorch_latest_p37
+
+
+## git operations ##
+
+git init
+git add .
+git status
+git commit -m ""
+git push origin master
+git clone (url)
+
+connect : git remote add origin 
+
+connec to new url : git remote set-url origin (new url)
