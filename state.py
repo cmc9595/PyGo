@@ -33,8 +33,6 @@ class State(object):
         state[3] = 1  # constant plane filled with 1
         return state
 
-    def ascii_print(self):
-        print(ascii_boards.render_board(self.board))
 
 if __name__ == "__main__":
     s = State()

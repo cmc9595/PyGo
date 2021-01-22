@@ -42,5 +42,5 @@ connect : git remote add origin
 connec to new url : git remote set-url origin (new url)
 
 
-## static js file problem -solved##
+## static js file problem -solved ##
 see https://stackoverflow.com/questions/41250560/flask-where-to-put-static-javascript-files-in-templates

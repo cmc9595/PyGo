@@ -1,4 +1,5 @@
 from flask import Flask, Response, request
+import requests
 app = Flask(__name__)
 from state import State
 from net import Net
@@ -11,7 +12,7 @@ from sgfmill import ascii_boards
 
 class PolicyNet(object):
 	def __init__(self):
-		val = torch.load("SL2.pth", map_location=torch.device("cpu"))
+		val = torch.load("SL3_5layer.pth", map_location=torch.device("cpu"))
 		self.model = Net()
 		self.model.load_state_dict(val)
 
@@ -26,7 +27,6 @@ def getRowCol(tensor):
 	# change to nparray
 	tensor = tensor.detach().numpy()
 	tensor = tensor.reshape(19, 19)
-
 	l=[]
 	for row, i in enumerate(tensor):
 		for col, j in enumerate(i):
@@ -34,86 +34,57 @@ def getRowCol(tensor):
 	l = sorted(l, reverse=True, key = lambda x : x[2])
 	return l
 
-def ascii_to_graphic(s): # s.board를 그린다.
-	pass
-
-
-def computer_move(s, model):
-	move = getRowCol(model(s))
-	
-	row = move[0][0]
-	col = move[0][1]
-
-
-
 
 s = State()
-#s.board.play(row, col, colour)
-s.board.play(3, 3, 'b')
 model = PolicyNet()
-#print(model(s))
 
-ret = getRowCol(model(s))
-for i in ret:
-	print(i)
+white_row="-1"
+white_col="-1"
 
-print(ascii_boards.render_board(s.board))
-game = ascii_boards.interpret_diagram(ascii_boards.render_board(s.board), 19)
-print(game)
-
+#url = 'http://13.125.243.134:5000/white'
+#data = {'row': white_row, 'col': white_col}
+#response = requests.get(url=url, params=data)
+#print(response)
 
 @app.route("/")
 def hello():
-	'''
-	ret = '<html><head><title>My Page</title>'
-	ret += '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>'
-	ret += '</head><body>'
-
-	ret += '<div id="board">'
-
-	ret += '<form action="/move" method="get">'
-	ret += '<input name="move" type="text"></input>'
-	ret += '<input type="submit" value="Move"></input>'
-	ret += '</form>'
-
-	ret += '</body></html>'
-	'''
 	ret = open("index.html").read()
-	print(ret)
 	return ret
 
 @app.route("/move")
 def move():
-	move = request.args.get("move", default="")
-	print(move)
+	row = 18 - int(request.args["row"])
+	col = int(request.args["col"])
+	#print("move: ", row, col)
 
-	return hello()
+	# human play
+	s.board.play(row, col, 'b')
 
+	# computer play
+	out = getRowCol(model(s))
+	s.board.play(out[0][0], out[0][1], 'w')
 
+	print(ascii_boards.render_board(s.board))
+	text = "row="+str(out[0][0])+"&col="+str(out[0][1])
 
+	response = app.response_class(
+			response=text,
+			status=200
+			)
+	
+	print(response.response)
+	return response
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+@app.route("/reset")
+def reset():
+#print("reset works!")
+	s.board.__init__(19)
+	ret=open("index.html").read()
+	return ret
 
 if __name__ == "__main__":
 	app.run(host='0.0.0.0', port='5000', debug=True)
+
+
+
+
