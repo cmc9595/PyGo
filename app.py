@@ -50,30 +50,35 @@ def hello():
 
 @app.route("/move")
 def move():
+	idx = 0
+
 	row = 18 - int(request.args["row"])
 	col = int(request.args["col"])
-	#print("move: ", row, col)
 
 	# human play
-	while True:
-		if s.board.play(row, col, 'b') != (IndexError or ValueError):
-			break
-		else:
-			print("Not validated move")
+	print("Human tries Move: ", row, col)
+	s.board.play(row, col, 'b')
+	
+	# s.board.play does not guarantee any go rules including suicide, ko ...
+	# use WGo.game.play() library to implement
+	# 2021.1.23
 
 
 	# computer play 
 	out = getRowCol(model(s))
-	while True:
-		idx = 0
-		if s.board.play(out[idx][0], out[idx][1], 'w') != ValueError:
+	while 1:
+		try:
+			print("Computer tries Move: ", out[idx][0], out[idx][1])
+			for i in out[:10]:
+				print(i)
+			s.board.play(out[idx][0], out[idx][1], 'w') 
 			break
-		else:
-			print("Not allowed there") #겹치는 곳 둘 때 있음.
-			idx += 1
+		except:
+			idx += 1 #idx<=361
+
 
 	print(ascii_boards.render_board(s.board))
-	text = "row="+str(out[0][0])+"&col="+str(out[0][1])
+	text = "row="+str(out[idx][0])+"&col="+str(out[idx][1])
 
 	text += "&"+str(ascii_boards.render_board(s.board))
 
