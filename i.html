@@ -1,0 +1,101 @@
+<!DOCTYPE HTML>
+<HTML>
+<HEAD>
+<TITLE>My Page</TITLE>
+<script type="text/javascript" src="static/wgo/wgo.js"></script> <!--static ssibal ssaeggiya-->
+<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">-->
+</HEAD>
+<BODY>
+<!--
+	<select id="tool" style="display: block; margin-bottom: 10px;">
+		<option value="black" selected>Black stone
+-->
+<div id="board"></div>
+<H1>PyGo beta</H1>
+<button id=b1 onclick="reset()">Reset</button>
+<button id=b2 onclick="goback()" >Go Back</button>
+
+<script type="text/javascript">
+var board = new WGo.Board(document.getElementById("board"), {
+	width: 1000	
+});
+//var game = new WGo.Game(19, 'KO');
+//var canvas = new WGo.Board.CanvasLayer();
+//canvas.draw(board);
+function update_board(arr, row, col){
+	var tool = document.getElementById("tool");
+	board.removeAllObjects();
+	for(var i=0;i<19;i++){
+		for(var j=0;j<19;j++){
+			if(arr[i][j]=="."){
+			}
+			if(arr[i][j]=="o"){
+				board.addObject({
+					x:j,
+					y:i,
+					c:WGo.W
+					});
+			}
+			if(arr[i][j]=="#"){
+				board.addObject({
+					x:j,
+					y:i,
+					c:WGo.B
+					});
+			}
+		}
+	}
+	board.addObject({
+		x:col,
+		y:row,
+		type: "CR"
+		});
+}
+board.addEventListener("click", function(x, y){
+	var xmlHttp = new XMLHttpRequest();
+	var row, col;
+	xmlHttp.onreadystatechange = function () {
+	if (this.status == 200 && this.readyState == this.DONE) {
+		tmp = xmlHttp.responseText;
+		//console.log(tmp)
+		//alert(xmlHttp.responseText);
+		row = 18 - tmp.split("&")[0].split("=")[1];
+		col = tmp.split("&")[1].split("=")[1];
+
+		var arr = new Array(19);
+		for (var i=0;i<19;i++){
+			arr[i] = new Array(19);
+		}
+		var b = tmp.split("&")[2];
+		//alert(b);
+
+		var idx = 0;
+		for(var i=0;i<b.length;i++){
+			if(b[i]=="."||b[i]=="o"||b[i]=="#"){
+				arr[parseInt(idx/19)][idx%19] = b[i];
+				idx++;
+			}
+		}
+		for(var i=0;i<19;i++)
+			console.log(arr[i]);
+		update_board(arr, row, col);
+		}
+	}
+	xmlHttp.open('GET', '/move?row='+y+'&col='+x, true);
+	xmlHttp.send();
+});
+
+function reset(){
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.onreadystatechange = function () {
+	if (this.status == 200 && this.readyState == this.DONE) {
+		console.log(xmlHttp.responseText);
+		}
+	}
+	xmlHttp.open('GET', '/reset?a=b', true);
+	xmlHttp.send();
+	board.removeAllObjects();
+}
+</script>
+</BODY>
+</HTML>

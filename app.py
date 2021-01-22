@@ -38,9 +38,6 @@ def getRowCol(tensor):
 s = State()
 model = PolicyNet()
 
-white_row="-1"
-white_col="-1"
-
 #url = 'http://13.125.243.134:5000/white'
 #data = {'row': white_row, 'col': white_col}
 #response = requests.get(url=url, params=data)
@@ -48,7 +45,7 @@ white_col="-1"
 
 @app.route("/")
 def hello():
-	ret = open("index.html").read()
+	ret = open("i.html").read()
 	return ret
 
 @app.route("/move")
@@ -58,14 +55,27 @@ def move():
 	#print("move: ", row, col)
 
 	# human play
-	s.board.play(row, col, 'b')
+	while True:
+		if s.board.play(row, col, 'b') != (IndexError or ValueError):
+			break
+		else:
+			print("Not validated move")
 
-	# computer play
+
+	# computer play 
 	out = getRowCol(model(s))
-	s.board.play(out[0][0], out[0][1], 'w')
+	while True:
+		idx = 0
+		if s.board.play(out[idx][0], out[idx][1], 'w') != ValueError:
+			break
+		else:
+			print("Not allowed there") #겹치는 곳 둘 때 있음.
+			idx += 1
 
 	print(ascii_boards.render_board(s.board))
 	text = "row="+str(out[0][0])+"&col="+str(out[0][1])
+
+	text += "&"+str(ascii_boards.render_board(s.board))
 
 	response = app.response_class(
 			response=text,
@@ -79,7 +89,7 @@ def move():
 def reset():
 #print("reset works!")
 	s.board.__init__(19)
-	ret=open("index.html").read()
+	ret=open("i.html").read()
 	return ret
 
 if __name__ == "__main__":
