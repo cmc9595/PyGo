@@ -45,12 +45,10 @@ model = PolicyNet()
 
 @app.route("/")
 def hello():
-	ret = open("i.html").read()
-	return ret
+	return open("i.html").read()
 
-@app.route("/move")
-def move():
-	idx = 0
+@app.route("/send_black")
+def receive_black():
 
 	row = 18 - int(request.args["row"])
 	col = int(request.args["col"])
@@ -66,6 +64,7 @@ def move():
 
 	# computer play 
 	out = getRowCol(model(s))
+	"""
 	while 1:
 		try:
 			print("Computer tries Move: ", out[idx][0], out[idx][1])
@@ -76,26 +75,50 @@ def move():
 		except:
 			idx += 1 #idx<=361
 
-
-	print(ascii_boards.render_board(s.board))
-	text = "row="+str(out[idx][0])+"&col="+str(out[idx][1])
-
-	text += "&"+str(ascii_boards.render_board(s.board))
+	"""
+	#print(ascii_boards.render_board(s.board))
+	#text = "row="+str(out[idx][0])+"&col="+str(out[idx][1])
+	text = str(out)
+	#text += "&"+str(ascii_boards.render_board(s.board))
+	print(text[:100])
 
 	response = app.response_class(
 			response=text,
 			status=200
 			)
 	
+	#print(response.response)
+	return response
+
+@app.route("/send_white")
+def receive_white():
+	row = int(request.args["row"])
+	col = int(request.args["col"])
+
+	#computer play
+	print("computer tries: ", row, col);
+	s.board.play(row, col, 'w')
+
+	#sends ascii_board
+	text = "board="+str(ascii_boards.render_board(s.board))
+	print(ascii_boards.render_board(s.board))
+	print(text[:20])
+
+	response = app.response_class(
+			response=text,
+			status=200
+			)
+
 	print(response.response)
 	return response
 
 @app.route("/reset")
 def reset():
-#print("reset works!")
+	#print("reset works!")
 	s.board.__init__(19)
-	ret=open("i.html").read()
-	return ret
+	return hello()
+	#ret = open("i.html").read()
+	#return ret
 
 if __name__ == "__main__":
 	app.run(host='0.0.0.0', port='5000', debug=True)

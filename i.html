@@ -3,86 +3,131 @@
 <HEAD>
 <TITLE>My Page</TITLE>
 <script type="text/javascript" src="static/wgo/wgo.js"></script> <!--static ssibal ssaeggiya-->
-<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js">-->
 </HEAD>
 <BODY>
-<!--
-	<select id="tool" style="display: block; margin-bottom: 10px;">
-		<option value="black" selected>Black stone
--->
 <div id="board"></div>
-<H1>PyGo beta</H1>
 <button id=b1 onclick="reset()">Reset</button>
 <button id=b2 onclick="goback()" >Go Back</button>
+<p id="blacklog">Log Here</p>
+<p id="whitelog">Log Here</p>
+<p id="bug">따먹힌곳은 못들어감 http://wgo.waltheri.net/documentation<br>
+한번 따먹힌 곳은 다시 놓지 못하는 버그가있음. WGo.Game.-KO 옵션을 참조할것.
+이 놈들이 ko구현할 때 딴 곳은 아예 다시 못 놓게 했는지 내가 따인곳은
+한번 놓았던 곳이기때문에 다시 못놓음 ㅆㅂ 첨부터 구현을 해야할듯.돌 따이는것 알고리즘으로구현.</p>
+
+Coordinate : <p id="coordinate"></p>
+Black : <p id="blackvalid"></p>
+White : <p id="whitevalid"></p>
 
 <script type="text/javascript">
 var board = new WGo.Board(document.getElementById("board"), {
-	width: 1000	
+	width: 800	
 });
-//var game = new WGo.Game(19, 'KO');
+var game = new WGo.Game(19, 'KO'); //declare game, play game here!
 //var canvas = new WGo.Board.CanvasLayer();
 //canvas.draw(board);
 function update_board(arr, row, col){
-	var tool = document.getElementById("tool");
 	board.removeAllObjects();
 	for(var i=0;i<19;i++){
 		for(var j=0;j<19;j++){
 			if(arr[i][j]=="."){
 			}
-			if(arr[i][j]=="o"){
-				board.addObject({
-					x:j,
-					y:i,
-					c:WGo.W
-					});
-			}
 			if(arr[i][j]=="#"){
 				board.addObject({
-					x:j,
-					y:i,
-					c:WGo.B
-					});
+				x:j,
+				y:i,
+				c:WGo.B
+				});
+
+			}
+			if(arr[i][j]=="o"){
+				board.addObject({
+				x:j,
+				y:i,
+				c:WGo.W
+				});
 			}
 		}
 	}
-	board.addObject({
-		x:col,
-		y:row,
-		type: "CR"
+		board.addObject({
+			x:col,
+			y:18-row,
+			type:"CR"
 		});
 }
-board.addEventListener("click", function(x, y){
+board.addEventListener("click", function(x, y){  // x, y->human     row, col->computer
+	document.getElementById("coordinate").innerHTML = "("+x+", "+y+")";
+	document.getElementById("blackvalid").innerHTML = game.isValid(x, y, WGo.B);
+	document.getElementById("whitevalid").innerHTML = game.isValid(x, y, WGo.W);
+	if(bm=game.isValid(x, y, WGo.B) && game.isOnBoard(x,y)){
+		game.play(x, y, WGo.B);
+		document.getElementById("blacklog").innerHTML = "BLACK : game.isValid on ("+(18-y)+","+x+") : "+bm;
+		//alert("Black Played");
+	}
+	else
+		return ;
+	
+	var row, col, val;
 	var xmlHttp = new XMLHttpRequest();
-	var row, col;
 	xmlHttp.onreadystatechange = function () {
 	if (this.status == 200 && this.readyState == this.DONE) {
-		tmp = xmlHttp.responseText;
-		//console.log(tmp)
-		//alert(xmlHttp.responseText);
-		row = 18 - tmp.split("&")[0].split("=")[1];
-		col = tmp.split("&")[1].split("=")[1];
-
-		var arr = new Array(19);
-		for (var i=0;i<19;i++){
-			arr[i] = new Array(19);
-		}
-		var b = tmp.split("&")[2];
-		//alert(b);
-
+		var tmp = xmlHttp.responseText;
+		//list idx:0~360
+		var list = tmp.split("], [");
+		list[0] = list[0].substring(2, list[0].length-1);
+		list[list.length-1] = list[list.length-1].substring(0, list[list.length-1].length-3);
 		var idx = 0;
-		for(var i=0;i<b.length;i++){
-			if(b[i]=="."||b[i]=="o"||b[i]=="#"){
-				arr[parseInt(idx/19)][idx%19] = b[i];
+		while(1)
+		{
+			row = list[idx].split(",")[0].trim();
+			col = list[idx].split(",")[1].trim();
+			val = list[idx].split(",")[2].trim();
+			row = 18 - row;
+			//alert(game.isValid(col, row, WGo.W));
+			//alert(game.isOnBoard(col, row));
+			if(wm=game.isValid(col, row, WGo.W) && game.isOnBoard(col, row))
+			{
+				game.play(col, row, WGo.W);
+				document.getElementById("whitelog").innerHTML = "WHITE : game.isValid on ("+(18-row)+","+col+") : "+wm;
+				break;
+			}
+			else{
+				alert("Can't play WHITE at ("+"idx:"+idx+", ("+(18-row)+","+col+")");
 				idx++;
 			}
 		}
-		for(var i=0;i<19;i++)
-			console.log(arr[i]);
-		update_board(arr, row, col);
+		var xmlHttp2 = new XMLHttpRequest();
+		xmlHttp2.onreadystatechange = function () { //onready"t"state 오타에서 4시간날림 ㅋㅋ
+			if (xmlHttp2.status==200 && xmlHttp2.readyState==xmlHttp2.DONE){
+				var tmp2 = xmlHttp2.responseText;
+				//console.log(tmp2);
+				var arr = Array(19);
+				for(var i=0;i<19;i++)
+					arr[i] = Array(19);
+				var j=0;
+				tmp2 = tmp2.split("=")[1];
+				for(var i=0;i<tmp2.length;i++){
+					if(tmp2[i]=="o"||tmp2[i]=="#"||tmp2[i]=="."){
+						arr[parseInt(j/19)][j%19] = tmp2[i];
+						if(j==360)
+							break;
+						j++;
+					}
+				}
+				//console.log(arr[0])
+				//console.log(arr[18])
+				update_board(arr, row, col); //update board with ascii, current move
+			}
+		}
+		row = 18 - row; //ascii랑 여기board랑 row다르다!!!!a
+		xmlHttp2.open('GET', '/send_white?row='+row+'&col='+col, true);
+		xmlHttp2.send();
 		}
 	}
-	xmlHttp.open('GET', '/move?row='+y+'&col='+x, true);
+	// /move가아니라 /get computer response로 해서 하나만 쓰기
+	xmlHttp.open('GET', '/send_black?row='+y+'&col='+x, true);
 	xmlHttp.send();
+
 });
 
 function reset(){
@@ -95,6 +140,7 @@ function reset(){
 	xmlHttp.open('GET', '/reset?a=b', true);
 	xmlHttp.send();
 	board.removeAllObjects();
+	game = new WGo.Game(19, 'KO');
 }
 </script>
 </BODY>
