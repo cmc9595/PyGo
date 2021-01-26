@@ -22,35 +22,21 @@ var board = new WGo.Board(document.getElementById("board"), {
 	width: 600	
 });
 
-var game = new WGo.Game(19, 'KO');
-
-var canvas = new WGo.Board.CanvasLayer();
-canvas.draw(board);
-
-
 board.addEventListener("click", function(x, y){
-	board.addObject({
-		x: x,
-		y: y,
-		c: WGo.B
-		});
+	board.addObject({x:x, y:y, c:WGo.B});
 	
 	var xmlHttp = new XMLHttpRequest();
-	var row, col;
 	xmlHttp.onreadystatechange = function () {
 	if (this.status == 200 && this.readyState == this.DONE) {
+	    var row, col;
 		tmp = xmlHttp.responseText;
 		console.log(tmp)
 		//alert(xmlHttp.responseText);
-		row = 18 - tmp.split("&")[0].split("=")[1]
+		row = tmp.split("&")[0].split("=")[1]
 		col = tmp.split("&")[1].split("=")[1]
-		//alert(row)
-		//alert(col)
-		board.addObject({
-			x: col,
-			y: row,
-			c: WGo.W
-			});
+		alert(row)
+		alert(col)
+		board.addObject({x:col, y:row, c:WGo.W});
 		}
 	}
 	xmlHttp.open('GET', '/move?row='+y+'&col='+x, true);
