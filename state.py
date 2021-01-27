@@ -15,31 +15,48 @@ class State(object):
             self.board = board
 
         self.move_num = 1 # move number 1~
+        self.move_board = [[0 for _ in range(19)]for _ in range(19)]
         self.move_rec = []
         self.white_cap = 0 # 백 잡은돌
         self.black_cap = 0 # 흑 잡은돌
         self.prev_board = [["." for _ in range(19)]for _ in range(19)]
         self.prev_prev_board = [["." for _ in range(19)]for _ in range(19)]
 
-    def serialize(self):  # SERIALIZE
-        bstate = np.zeros(19*19, np.uint8)
+    def serialize(self, turn):  # SERIALIZE 19X19X12 one hot incoding
+        bstate = np.zeros(19*19, np.uint16) #bug was uint16!
         i = 0
         for row in range(19):
             for col in range(19):
                 if self.board[row][col] == '#':
-                    bstate[i] = 4
+                    if turn=="b":
+                        bstate[i] = 1024 + self.move_board[row][col]//2
+                    else:
+                        bstate[i] = 512 + self.move_board[row][col]//2
+                    
                 elif self.board[row][col] == 'o':
-                    bstate[i] = 2
+                    if turn=="b":
+                        bstate[i] = 512 + self.move_board[row][col]//2
+                    else:
+                        bstate[i] = 1024 + self.move_board[row][col]//2
                 else:  # None
-                    bstate[i] = 1
-            i+=1
+                    bstate[i] = 256 + self.move_board[row][col]//2
+                i+=1
         bstate = bstate.reshape(19, 19)
-        state = np.zeros((4, 19, 19), np.uint8)
-        # 0-3 columns is black/white/empty
-        state[0] = (bstate>>2)&1
-        state[1] = (bstate>>1)&1
-        state[2] = (bstate>>0)&1
-        state[3] = 1  # constant plane filled with 1
+        state = np.zeros((12, 19, 19), np.uint8)
+        # 0-3 columns is me/oppo/empty 
+        # 4-11 turns since
+        state[0] = (bstate>>10)&1
+        state[1] = (bstate>>9)&1
+        state[2] = (bstate>>8)&1
+        state[3] = 1 # constant 1 plane
+        state[4] = (bstate>>7)&1
+        state[5] = (bstate>>6)&1
+        state[6] = (bstate>>5)&1
+        state[7] = (bstate>>4)&1
+        state[8] = (bstate>>3)&1
+        state[9] = (bstate>>2)&1
+        state[10] = (bstate>>1)&1
+        state[11] = (bstate>>0)&1
         return state
 
     def dfs(self, row, col, color, v):
@@ -141,6 +158,7 @@ class State(object):
         if self.is_capturing_move(row, col, color): #따낸 돌 제거먼저 하고 돌놔야 bug방지
             for cluster in self.is_capturing_move(row, col, color):
                 for (r, c) in cluster:
+                     #print("capture:", r, c)
                     self.board[r][c] = "." #따낸 돌 들어내기
                     num += 1
         if color=='w':
@@ -150,8 +168,28 @@ class State(object):
             
         self.board[row][col] = stone[color]
         self.move_rec.append((self.move_num, row, col, color))
+        self.move_board[row][col] = self.move_num
         self.move_num += 1
         return True
+        
+    def printboard(self):
+        for i in range(19):
+            print("%3d " % i, end='')
+            for j in range(19):
+                print(self.board[i][j], end=' ')
+            print()
+            if i==18:
+                print("  ", end=' ')
+        for k in range(19):
+            print("%2d"%k, end='')
+        print()
+
+    def forhtml(self):
+        ret = ""
+        for i in range(19):
+            for j in range(19):
+                ret += self.board[i][j]
+        return ret
 
 def printboard(arr):
     for i in range(19):
@@ -191,8 +229,8 @@ if __name__ == "__main__":
 #s.play(1, 1, 'b')
 
     printboard(s.board)
-    printboard(s.prev_board)
-    printboard(s.prev_prev_board)
+
+    printboard(s.move_board)
 
 
 #print(s.move_rec)

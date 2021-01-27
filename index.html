@@ -19,29 +19,36 @@
 
 <script type="text/javascript">
 var board = new WGo.Board(document.getElementById("board"), {
-	width: 600	
+	width: 800	
 });
 
+function update_board(arr){
+    board.removeAllObjects();
+    for(var i=0;i<19;i++){
+        for(var j=0;j<19;j++){
+            if(arr[i*19+j]=="o")
+                board.addObject({x:j, y:i, c:WGo.W});
+            if(arr[i*19+j]=="#")
+                board.addObject({x:j, y:i, c:WGo.B});
+        }
+    }
+}
 board.addEventListener("click", function(x, y){
-	board.addObject({x:x, y:y, c:WGo.B});
-	
+        //board.addObject({x:x, y:y, c:WGo.B});
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.onreadystatechange = function () {
-	if (this.status == 200 && this.readyState == this.DONE) {
-	    var row, col;
-		tmp = xmlHttp.responseText;
-		console.log(tmp)
-		//alert(xmlHttp.responseText);
-		row = tmp.split("&")[0].split("=")[1]
-		col = tmp.split("&")[1].split("=")[1]
-		alert(row)
-		alert(col)
-		board.addObject({x:col, y:row, c:WGo.W});
-		}
-	}
+	    if (this.status == 200 && this.readyState == this.DONE) {
+		    tmp = xmlHttp.responseText;
+            //alert(tmp)
+            var arr = [];
+            for(var i=0;i<tmp.length;i++)
+                arr.push(tmp[i])
+            update_board(arr)
+	    }
+        
+    }
 	xmlHttp.open('GET', '/move?row='+y+'&col='+x, true);
 	xmlHttp.send();
-	
 	
 });
 function reset(){

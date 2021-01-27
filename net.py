@@ -21,7 +21,7 @@ class GoValueDataset(Dataset):
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.layer1 = nn.Conv2d(4, 32, kernel_size=5, stride=1, padding=2)
+        self.layer1 = nn.Conv2d(12, 32, kernel_size=5, stride=1, padding=2)
         self.layer2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
         self.layer3 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
         self.layer4 = nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0)
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     model = Net().to(device)
 
     #****summary****
-    summary(model, (4, 19, 19))
+    summary(model, (12, 19, 19))
 
     optimizer = optim.Adam(model.parameters())
     floss = nn.MSELoss()
