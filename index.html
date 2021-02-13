@@ -22,7 +22,7 @@ var board = new WGo.Board(document.getElementById("board"), {
 	width: 800	
 });
 
-function update_board(arr){
+function update_board(arr, row, col){
     board.removeAllObjects();
     for(var i=0;i<19;i++){
         for(var j=0;j<19;j++){
@@ -32,24 +32,25 @@ function update_board(arr){
                 board.addObject({x:j, y:i, c:WGo.B});
         }
     }
+    board.addObject({x:col, y:row, type:"CR"});
 }
 board.addEventListener("click", function(x, y){
         //board.addObject({x:x, y:y, c:WGo.B});
 	var xmlHttp = new XMLHttpRequest();
 	xmlHttp.onreadystatechange = function () {
 	    if (this.status == 200 && this.readyState == this.DONE) {
-		    tmp = xmlHttp.responseText;
+		    tmp = xmlHttp.responseText.split('&')[0];
+            row = xmlHttp.responseText.split('&')[1];
+            col = xmlHttp.responseText.split('&')[2];
             //alert(tmp)
             var arr = [];
             for(var i=0;i<tmp.length;i++)
                 arr.push(tmp[i])
-            update_board(arr)
+            update_board(arr, row, col)
 	    }
-        
     }
 	xmlHttp.open('GET', '/move?row='+y+'&col='+x, true);
 	xmlHttp.send();
-	
 });
 function reset(){
 	var xmlHttp = new XMLHttpRequest();
@@ -62,9 +63,6 @@ function reset(){
 	xmlHttp.send();
 	board.removeAllObjects();
 }
-
-
 </script>
 </BODY>
 </HTML>
-

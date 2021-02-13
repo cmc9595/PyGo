@@ -7,3 +7,5 @@ tmp.py
 tmp.*
 
 *.sgf
+
+*.pth

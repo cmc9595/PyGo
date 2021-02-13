@@ -58,6 +58,8 @@ for x in tqdm(range(700, 1000), miniters=1):
             
             try:
                 if s.play(m[0], m[1], color):
+                    s.get_next_move(next_move[0], next_move[1], next_color)
+
                     #s.printboard()
                     #print(move, color)
                     X.append(s.serialize(color))

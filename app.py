@@ -9,7 +9,7 @@ import numpy as np
 
 class PolicyNet(object):
     def __init__(self):
-        val = torch.load("SL4.pth", map_location=torch.device("cpu"))
+        val = torch.load("Adadelta.pth", map_location=torch.device("cpu"))
         self.model = Net()
         self.model.load_state_dict(val)
 
@@ -49,7 +49,7 @@ def move():
     # human
     if not s.play(row, col, 'b'):
         print("Human Can't Play(%d,%d)" % (row, col))
-
+        text = str(s.forhtml())
     else:
         print("Human Move: ", row, col)
         
@@ -59,18 +59,23 @@ def move():
         i = 0
         while 1:
             if s.play(out[i][0], out[i][1], 'w'):
-                print("Computer Move: ", out[i][0], out[i][1])
+                print("Computer Move: ", out[i][0], out[i][1], out[i][2])
+                for j in range(0, 10):
+                    print(out[j][0],out[j][1],out[j][2])
                 break
             else:
                 if i==360:
                     print("All Move illegal")
                     break
                 i += 1
+        pos = []
+        for p in range(10):
+            pos.append((out[p][0], out[p][1]))
 
-    s.printboard()
+        text = str(s.forhtml()) + "&"+str(out[i][0])+"&"+str(out[i][1])
+        s.printboard_with_pos(pos)
 
     #text = "row=" + str(out[i][0]) + "&col=" + str(out[i][1])
-    text = str(s.forhtml())
     response = app.response_class(
             response=text,
             status=200

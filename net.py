@@ -21,49 +21,52 @@ class GoValueDataset(Dataset):
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.layer1 = nn.Conv2d(12, 32, kernel_size=5, stride=1, padding=2)
-        self.layer2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
-        self.layer3 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
-        self.layer4 = nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0)
-        self.last = nn.Linear(128*19*19, 361)
+        self.layer1 = nn.Conv2d(38, 64, kernel_size=5, stride=1, padding=2)
+        self.layer2 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
+        self.layer3 = nn.Conv2d(128, 128, kernel_size=1, stride=1, padding=0)
+        self.last = nn.Linear(128*19*19, 19*19)
+
+        #nn.init.xavier_uniform(self.last.weight)
+        self.dropout = nn.Dropout(0.25)
         
     def forward(self, x):
         x = F.relu(self.layer1(x))
+        #x = self.dropout(x)
         x = F.relu(self.layer2(x))
+        #x = self.dropout(x)
         x = F.relu(self.layer3(x))
-        x = F.relu(self.layer4(x))
+         #x = self.dropout(x)
         
         x = x.view(-1, 128*19*19)
         x = self.last(x)
-
         return x
+         #return F.softmax(x, dim=1)
 
 if __name__ == "__main__":
     device = "cuda"
     go_dataset = GoValueDataset()
     
-    train_loader = torch.utils.data.DataLoader(go_dataset, batch_size=256, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(go_dataset, batch_size=64, shuffle=True)
     model = Net().to(device)
 
     #****summary****
-    summary(model, (12, 19, 19))
+    summary(model, (38, 19, 19))
 
     optimizer = optim.Adam(model.parameters())
-    floss = nn.MSELoss()
-    #floss = torch.nn.CrossEntropyLoss().to(device)
+    floss = torch.nn.CrossEntropyLoss().to(device)
 
     if device == "cuda":
         model.cuda()
    
     model.train()
-    for epoch in tqdm(range(5)):
+    for epoch in tqdm(range(100)):
         all_loss = 0
         num_loss = 0
         for batch_idx, (data, target) in enumerate(tqdm(train_loader)):
             #target = target.unsqueeze(-1)
             data, target = data.to(device), target.to(device)
             data = data.float()
-            target = target.float()
+            target = target.long
             
             #target = target.squeeze()
 
